@@ -179,10 +179,15 @@ void loop()
   analog[7] = analogRead(PIN_BATT_VOLT);
 
   // map to ppm output
-  ppm[0] = analog[0]*700/1023 + 1150 -6; // throttle
-  ppm[1] =  analog[3]*700/1023 + 1150; // roll (aileron)
-  ppm[2] = (1023-analog[2])*700/1023 + 1150; // pitch (elevator)
-  ppm[3] = analog[1]*700/1023 + 1150; // yaw (rudder)
+  // thrust range 65 - 975 
+  // roll range 60 - 1010
+  // pitch range 65 - 975
+  // yaw range  60 - 1015
+  
+  ppm[0] = (analog[0]-65)*700/910 + 1150; // throttle
+  ppm[1] = (analog[3]-60)*700/950 + 1150; // roll (aileron)
+  ppm[2] = (910-(analog[2]-65))*700/910 + 1150; // pitch (elevator)
+  ppm[3] = (analog[1]-60)*700/955 + 1150; // yaw (rudder)
 
   // handle special case of arming AutoQuad
   if (analog[0] < 450 && analog[1] > 1000)
@@ -212,7 +217,7 @@ void loop()
   ppm[7] = default_servo_value;
 
   // debug: output analog and digital input values to the serial port
-  /* Serial.print (analog[0]);
+  /*Serial.print (analog[0]);
   Serial.print (" ");
   Serial.print (analog[1]);
   Serial.print (" ");
@@ -234,8 +239,15 @@ void loop()
   Serial.print (" ");
   Serial.print (digitalRead(PIN_2_POS_SW_LEFT));
   Serial.print (" ");
-  Serial.println (digitalRead(PIN_2_POS_SW_RIGHT)); */
-    
+  Serial.println (digitalRead(PIN_2_POS_SW_RIGHT)); 
+    */
+  Serial.print (ppm[0]);
+  Serial.print (" ");
+  Serial.print (ppm[1]);
+  Serial.print (" ");
+  Serial.print (ppm[2]);
+  Serial.print (" ");
+  Serial.println (ppm[3]);
   delay(10);
 }
 /****************************************************************************/
