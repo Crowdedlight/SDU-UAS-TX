@@ -57,3 +57,10 @@
 /home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control/CMakeFiles/remote_control_generate_messages_eus.dir
 /home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control/CMakeFiles/remote_control_generate_messages_lisp.dir
 /home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control/CMakeFiles/remote_control_gennodejs.dir
+/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control_keyboard/CMakeFiles/list_install_components.dir
+/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control_keyboard/CMakeFiles/install.dir
+/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control_keyboard/CMakeFiles/rebuild_cache.dir
+/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control_keyboard/CMakeFiles/install/strip.dir
+/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control_keyboard/CMakeFiles/install/local.dir
+/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control_keyboard/CMakeFiles/test.dir
+/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control_keyboard/CMakeFiles/edit_cache.dir

@@ -19,12 +19,19 @@ set(CMAKE_MAKEFILE_DEPENDS
   "remote_control/catkin_generated/remote_control-msg-extras.cmake.installspace.in"
   "remote_control/catkin_generated/setup_py_interrogation.cmake"
   "remote_control/cmake/remote_control-genmsg.cmake"
+  "remote_control_keyboard/catkin_generated/ordered_paths.cmake"
+  "remote_control_keyboard/catkin_generated/package.cmake"
+  "remote_control_keyboard/catkin_generated/setup_py_interrogation.cmake"
   "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/devel/share/remote_control/cmake/remote_control-msg-paths.cmake"
   "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/src/CMakeLists.txt"
   "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/src/remote_control/CMakeLists.txt"
   "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/src/remote_control/bin/main"
   "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/src/remote_control/package.xml"
   "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/src/remote_control/setup.py"
+  "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/src/remote_control_keyboard/CMakeLists.txt"
+  "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/src/remote_control_keyboard/bin/main"
+  "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/src/remote_control_keyboard/package.xml"
+  "/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/src/remote_control_keyboard/setup.py"
   "/opt/ros/kinetic/share/catkin/cmake/../package.xml"
   "/opt/ros/kinetic/share/catkin/cmake/all.cmake"
   "/opt/ros/kinetic/share/catkin/cmake/assert.cmake"
@@ -178,6 +185,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
   "gtest/CMakeFiles/CMakeDirectoryInformation.cmake"
   "gtest/gtest/CMakeFiles/CMakeDirectoryInformation.cmake"
   "remote_control/CMakeFiles/CMakeDirectoryInformation.cmake"
+  "remote_control_keyboard/CMakeFiles/CMakeDirectoryInformation.cmake"
   )
 
 # Dependency information for all targets:

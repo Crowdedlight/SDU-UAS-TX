@@ -1139,6 +1139,24 @@ clean: remote_control/CMakeFiles/remote_control_gennodejs.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Directory level rules for directory remote_control_keyboard
+
+# Convenience name for "all" pass in the directory.
+remote_control_keyboard/all:
+
+.PHONY : remote_control_keyboard/all
+
+# Convenience name for "clean" pass in the directory.
+remote_control_keyboard/clean:
+
+.PHONY : remote_control_keyboard/clean
+
+# Convenience name for "preinstall" pass in the directory.
+remote_control_keyboard/preinstall:
+
+.PHONY : remote_control_keyboard/preinstall
+
+#=============================================================================
 # Special targets to cleanup operation of make.
 
 # Special rule to run CMake to check the build system integrity.

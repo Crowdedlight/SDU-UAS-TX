@@ -118,6 +118,7 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/gtest/cmake_install.cmake")
   include("/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control/cmake_install.cmake")
+  include("/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/build/remote_control_keyboard/cmake_install.cmake")
 
 endif()
 

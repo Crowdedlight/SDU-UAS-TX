@@ -10,10 +10,6 @@ import json
 
 from remote_control.msg import set_controller
 
-class Payload(object):
-     def __init__(self, j):
-         self.__dict__ = json.loads(j)
-
 class remote_control:
     def __init__(self):
         # Parameters depending on camera
@@ -21,7 +17,7 @@ class remote_control:
         # Service handler
 
         # parameters
-        self.ser = serial.Serial('/dev/ttyUSB0')
+        self.ser = serial.Serial(port='/dev/ttyUSB0', baudrate=115200)
 
         # Subscribe to get height
         self.sub_control = rospy.Subscriber("/remote_control/set_controller", set_controller, self.callback)
@@ -53,10 +49,8 @@ class remote_control:
             return 3.50*procent+1500
 
     def callback(self, msg):
-        # put in object to access with dot notation
-        data = Payload(msg)
-
-        data = self.clampProcentage(data)
+        # rospy.loginfo(msg)
+        data = self.clampProcentage(msg)
 
         # change msg to ppm values
         # thrust = 0-100%
@@ -82,8 +76,9 @@ class remote_control:
 
     def sendMsgToTransmitter(self, msg):
         # json stringify for transmit
-        jsonMsg = json.dump(msg)
-        self.ser.write(jsonMsg)
+        jsonMsg = json.dumps(msg)
+        self.ser.write(jsonMsg + "\n")
+        rospy.loginfo(jsonMsg)
 
     def shutdownHandler(self):
 
