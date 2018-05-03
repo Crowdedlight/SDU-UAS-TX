@@ -65,6 +65,7 @@ Revision
 #define ppm_number 8  //set the number of ppm chanels
 #define analog_number 8  //set the number of ppm chanels
 #define default_servo_value 1500  //set the default servo value
+#define default_thrust_value 1150
 #define PPM_FrLen 22500  //set the PPM frame length in microseconds (1ms = 1000µs)
 #define PPM_PulseLen 300  //set the pulse length
 #define onState 0  //set polarity of the pulses: 1 is positive, 0 is negative
@@ -80,8 +81,7 @@ boolean led_state;
 boolean buzzer_state;
 
 
-// setup JSON
-StaticJsonBuffer<200> jsonBuffer;
+
 /****************************************************************************/
 void setup()
 {  
@@ -100,10 +100,11 @@ void setup()
   Serial.begin(115200);
 
   //initiallize default ppm values
-  for(int i=0; i<ppm_number; i++)
+  for(int i=1; i<ppm_number; i++)
   {
     ppm[i]= default_servo_value;
   }
+  ppm[0]=default_thrust_value;
 
   pinMode(PIN_TX, OUTPUT);
   pinMode(PIN_AUDIO, OUTPUT);
@@ -169,15 +170,17 @@ void loop()
 
   if(Serial.available())
   {
+    // setup JSON
+    StaticJsonBuffer<200> jsonBuffer;
     String json = Serial.readStringUntil("\n");
   
     // Root of the object tree.
+    Serial.println(json);
     //
     // It's a reference to the JsonObject, the actual bytes are inside the
     // JsonBuffer with all the other nodes of the object tree.
     // Memory is freed when jsonBuffer goes out of scope.
     JsonObject& root = jsonBuffer.parseObject(json);
-    Serial.println(json);
     // Test if parsing succeeds.
     if (!root.success()) {
       Serial.println("parseObject() failed");
@@ -194,7 +197,7 @@ void loop()
     double yaw = root["yaw"];
   
     ppm[0] = thrust;
-    ppm[1] = thrust;
+    ppm[1] = roll;
     ppm[2] = pitch;
     ppm[3] = yaw;
     Serial.print(thrust);
@@ -203,7 +206,12 @@ void loop()
     Serial.print("  ");
     Serial.print(pitch);
     Serial.print("  ");
-    Serial.println(yaw);
+    Serial.print(yaw);
+    Serial.print("  ");
+    Serial.print(ppm[4]);
+    Serial.print("  ");
+    Serial.println(ppm[5]);
+    
   }
 
   
@@ -234,30 +242,30 @@ void loop()
   if (analog[4] < 300)
     ppm[4] = 1150;
   else if (analog[4] < 700)
-    ppm[4] == 1500;
+    ppm[4] = 1500;
   else
-    ppm[4] == 1850;
+    ppm[4] = 1850;
   
   // handle right 3-way switch
-  if (analog[6] < 300)
+  if (analog[5] < 300)
     ppm[5] = 1150;
-  else if (analog[6] < 700)
-    ppm[5] == 1500;
+  else if (analog[5] < 700)
+    ppm[5] =  1500;
   else
-    ppm[5] ==1850; 
+    ppm[5] = 1850; 
 
   // unused for now 
   ppm[6] = default_servo_value;
   ppm[7] = default_servo_value;
    
-  Serial.print (ppm[0]);
-  Serial.print (" ");
-  Serial.print (ppm[1]);
-  Serial.print (" ");
-  Serial.print (ppm[2]);
-  Serial.print (" ");
-  Serial.println (ppm[3]);
-  delay(10);
+//  Serial.print (ppm[0]);
+//  Serial.print (" ");
+//  Serial.print (ppm[1]);
+//  Serial.print (" ");
+//  Serial.print (ppm[2]);
+//  Serial.print (" ");
+//  Serial.println (ppm[3]);
+//  delay(1);
 }
 /****************************************************************************/
 

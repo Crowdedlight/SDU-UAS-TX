@@ -185,9 +185,9 @@ void loop()
   // yaw range  60 - 1015
   
   ppm[0] = (analog[0]-65)*700/910 + 1150; // throttle
-  ppm[1] = (analog[3]-60)*700/950 + 1150; // roll (aileron)
-  ppm[2] = (910-(analog[2]-65))*700/910 + 1150; // pitch (elevator)
-  ppm[3] = (analog[1]-60)*700/955 + 1150; // yaw (rudder)
+  ppm[1] = (950-(analog[3]-60))*700/950 + 1150; // roll (aileron)
+  ppm[2] = (analog[2]-65)*700/910 + 1150; // pitch (elevator)
+  ppm[3] = (955-(analog[1]-60))*700/955 + 1150; // yaw (rudder)
 
   // handle special case of arming AutoQuad
   if (analog[0] < 450 && analog[1] > 1000)
@@ -200,17 +200,17 @@ void loop()
   if (analog[4] < 300)
     ppm[4] = 1150;
   else if (analog[4] < 700)
-    ppm[4] == 1500;
+    ppm[4] = 1500;
   else
-    ppm[4] == 1850;
+    ppm[4] = 1850;
   
   // handle right 3-way switch
-  if (analog[6] < 300)
+  if (analog[5] < 300)
     ppm[5] = 1150;
-  else if (analog[6] < 700)
-    ppm[5] == 1500;
+  else if (analog[5] < 700)
+    ppm[5] = 1500;
   else
-    ppm[5] ==1850; 
+    ppm[5] = 1850; 
 
   // unused for now 
   ppm[6] = default_servo_value;
