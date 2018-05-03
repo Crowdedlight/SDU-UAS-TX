@@ -181,7 +181,11 @@ void loop()
   int left = digitalRead(PIN_2_POS_SW_LEFT);
   int right = digitalRead(PIN_2_POS_SW_RIGHT);
 
-  if(Serial.available() && right)
+  if(analog[7] < 360)
+  {
+   tone(PIN_BUZZER,1000);
+  }
+  else if(Serial.available() && right)
   {
     // setup JSON
     StaticJsonBuffer<100> jsonBuffer;
@@ -228,16 +232,19 @@ void loop()
     Serial.print (ppm[5]);
     Serial.print (" ");
     Serial.print (ppm[6]);
-    Serial.print (" ");
+    Serial.print (" ");                       
     Serial.println (ppm[7]);
   }
   else if(!right)
   {
+    // Use the potentiometer value to restrict the range of the output for pitch and roll
+    int outputRange = 700*analog[6]/1023;
+    int offset = 1500-outputRange/2;
     ppm[0] = (analog[0]-65)*700/910 + 1150; // throttle
-    ppm[1] = (950-(analog[3]-60))*700/950 + 1150; // roll (aileron)
-    ppm[2] = (analog[2]-65)*700/910 + 1150; // pitch (elevator)
+    ppm[1] = (950-(analog[3]-60))*outputRange/950 + offset; // roll (aileron)
+    ppm[2] = (analog[2]-65)*outputRange/910 + offset; // pitch (elevator)
     ppm[3] = (955-(analog[1]-60))*700/955 + 1150; // yaw (rudder)
-
+    /*
     Serial.print (analog[0]);
     Serial.print (" ");
     Serial.print (analog[1]);
@@ -261,8 +268,24 @@ void loop()
     Serial.print (digitalRead(PIN_2_POS_SW_LEFT));
     Serial.print (" ");
     Serial.println (digitalRead(PIN_2_POS_SW_RIGHT)); 
-    
+    */
   }
+
+    Serial.print (ppm[0]);
+    Serial.print (" ");
+    Serial.print (ppm[1]);
+    Serial.print (" ");
+    Serial.print (ppm[2]);
+    Serial.print (" ");
+    Serial.print (ppm[3]);
+    Serial.print (" ");
+    Serial.print (ppm[4]);
+    Serial.print (" ");
+    Serial.print (ppm[5]);
+    Serial.print (" ");
+    Serial.print (ppm[6]);
+    Serial.print (" ");                       
+    Serial.println (ppm[7]);
 
   // update LED
   if (count % 200 == 0)
@@ -298,15 +321,6 @@ void loop()
   // unused for now 
   ppm[6] = default_servo_value;
   ppm[7] = default_servo_value;
-   
-//  Serial.print (ppm[0]);
-//  Serial.print (" ");
-//  Serial.print (ppm[1]);
-//  Serial.print (" ");
-//  Serial.print (ppm[2]);
-//  Serial.print (" ");
-//  Serial.println (ppm[3]);
-//  delay(1);
 }
 /****************************************************************************/
 
