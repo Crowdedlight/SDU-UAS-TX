@@ -66,10 +66,10 @@ class remote_control:
         pitch = self.Procent_to_ppm(data.pitch)
         yaw = self.Procent_to_ppm(data.yaw)
 
-        jsonMsg = {"thrust": thrust,
-                   "roll": roll,
-                   "pitch": pitch,
-                   "yaw": yaw}
+        jsonMsg = {"t": thrust,
+                   "r": roll,
+                   "p": pitch,
+                   "y": yaw}
 
         self.sendMsgToTransmitter(jsonMsg)
 
@@ -77,8 +77,8 @@ class remote_control:
     def sendMsgToTransmitter(self, msg):
         # json stringify for transmit
         jsonMsg = json.dumps(msg)
-        self.ser.write(jsonMsg + "\n")
-        rospy.loginfo(jsonMsg)
+        self.ser.write(jsonMsg + " \n")
+        # rospy.loginfo(jsonMsg)
 
     def shutdownHandler(self):
 
@@ -90,11 +90,15 @@ class remote_control:
 
 
 def main():
-    rospy.init_node('droneinfo', anonymous=True)
+    rospy.init_node('remote_control', anonymous=True)
     rospy.sleep(1)
 
     rc = remote_control()
     rospy.on_shutdown(rc.shutdownHandler)
+
+    while not rospy.is_shutdown():
+        line = rc.ser.readline()
+        rospy.loginfo(line)
 
     rospy.spin()
 
