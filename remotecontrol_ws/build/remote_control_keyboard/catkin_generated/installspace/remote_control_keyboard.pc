@@ -1,0 +1,8 @@
+prefix=/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/install
+
+Name: remote_control_keyboard
+Description: Description of remote_control_keyboard
+Version: 0.0.0
+Cflags: 
+Libs: -L/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/install/lib 
+Requires: 

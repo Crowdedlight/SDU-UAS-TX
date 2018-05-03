@@ -1,0 +1,6 @@
+set(remote_control_SETUP_PY_VERSION "0.0.0")
+set(remote_control_SETUP_PY_SCRIPTS "")
+set(remote_control_SETUP_PY_PACKAGES "remote_control")
+set(remote_control_SETUP_PY_PACKAGE_DIRS "src/remote_control")
+set(remote_control_SETUP_PY_MODULES "")
+set(remote_control_SETUP_PY_MODULE_DIRS "")
