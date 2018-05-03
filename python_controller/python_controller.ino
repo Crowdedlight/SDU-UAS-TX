@@ -168,59 +168,6 @@ void loop()
   static int val = 1;
   count ++;
 
-  if(Serial.available())
-  {
-    // setup JSON
-    StaticJsonBuffer<200> jsonBuffer;
-    String json = Serial.readStringUntil("\n");
-  
-    // Root of the object tree.
-    Serial.println(json);
-    //
-    // It's a reference to the JsonObject, the actual bytes are inside the
-    // JsonBuffer with all the other nodes of the object tree.
-    // Memory is freed when jsonBuffer goes out of scope.
-    JsonObject& root = jsonBuffer.parseObject(json);
-    // Test if parsing succeeds.
-    if (!root.success()) {
-      Serial.println("parseObject() failed");
-      return;
-    }
-    
-    // Fetch values.
-    //
-    // Most of the time, you can rely on the implicit casts.
-    // In other case, you can do root["time"].as<long>();
-    double thrust = root["thrust"];
-    double roll = root["roll"];
-    double pitch = root["pitch"];
-    double yaw = root["yaw"];
-  
-    ppm[0] = thrust;
-    ppm[1] = roll;
-    ppm[2] = pitch;
-    ppm[3] = yaw;
-    Serial.print(thrust);
-    Serial.print("  ");
-    Serial.print(roll);
-    Serial.print("  ");
-    Serial.print(pitch);
-    Serial.print("  ");
-    Serial.print(yaw);
-    Serial.print("  ");
-    Serial.print(ppm[4]);
-    Serial.print("  ");
-    Serial.println(ppm[5]);
-    
-  }
-
-  
-  // update LED
-  if (count % 200 == 0)
-    digitalWrite(PIN_LED_GREEN, HIGH);
-  else
-    digitalWrite(PIN_LED_GREEN, LOW);
-
   // read analog input
   analog[0] = analogRead(PIN_LEFT_Y);
   analog[1] = analogRead(PIN_LEFT_X);
@@ -230,6 +177,100 @@ void loop()
   analog[5] = analogRead(PIN_3_POS_SW_RIGHT);
   analog[6] = analogRead(PIN_POT);
   analog[7] = analogRead(PIN_BATT_VOLT);
+
+  int left = digitalRead(PIN_2_POS_SW_LEFT);
+  int right = digitalRead(PIN_2_POS_SW_RIGHT);
+
+  if(Serial.available() && right)
+  {
+    // setup JSON
+    StaticJsonBuffer<100> jsonBuffer;
+    //String json = Serial.readStringUntil("\n");
+  
+    // Root of the object tree.
+    //Serial.println(json);
+    //
+    // It's a reference to the JsonObject, the actual bytes are inside the
+    // JsonBuffer with all the other nodes of the object tree.
+    // Memory is freed when jsonBuffer goes out of scope.
+    JsonObject& root = jsonBuffer.parseObject(Serial);
+    // Test if parsing succeeds.
+    if (!root.success()) {
+      Serial.println("parseObject() failed");
+      return;
+    }
+
+    
+    // Fetch values.
+    //
+    // Most of the time, you can rely on the implicit casts.
+    // In other case, you can do root["time"].as<long>();
+    double thrust = root["t"];
+    double roll = root["r"];
+    double pitch = root["p"];
+    double yaw = root["y"];
+  
+    ppm[0] = thrust;
+    ppm[1] = roll;
+    ppm[2] = pitch;
+    ppm[3] = yaw;
+
+    Serial.print (ppm[0]);
+    Serial.print (" ");
+    Serial.print (ppm[1]);
+    Serial.print (" ");
+    Serial.print (ppm[2]);
+    Serial.print (" ");
+    Serial.print (ppm[3]);
+    Serial.print (" ");
+    Serial.print (ppm[4]);
+    Serial.print (" ");
+    Serial.print (ppm[5]);
+    Serial.print (" ");
+    Serial.print (ppm[6]);
+    Serial.print (" ");
+    Serial.println (ppm[7]);
+  }
+  else if(!right)
+  {
+    ppm[0] = (analog[0]-65)*700/910 + 1150; // throttle
+    ppm[1] = (950-(analog[3]-60))*700/950 + 1150; // roll (aileron)
+    ppm[2] = (analog[2]-65)*700/910 + 1150; // pitch (elevator)
+    ppm[3] = (955-(analog[1]-60))*700/955 + 1150; // yaw (rudder)
+
+    Serial.print (analog[0]);
+    Serial.print (" ");
+    Serial.print (analog[1]);
+    Serial.print (" ");
+    Serial.print (analog[2]);
+    Serial.print (" ");
+    Serial.print (analog[3]);
+    Serial.print (" ");
+    Serial.print (analog[4]);
+    Serial.print (" ");
+    Serial.print (analog[5]);
+    Serial.print (" ");
+    Serial.print (analog[6]);
+    Serial.print (" ");
+    Serial.print (analog[7]);
+    Serial.print (" ");
+    Serial.print (digitalRead(PIN_LEFT_BUTTON));
+    Serial.print (" ");
+    Serial.print (digitalRead(PIN_RIGHT_BUTTON));
+    Serial.print (" ");
+    Serial.print (digitalRead(PIN_2_POS_SW_LEFT));
+    Serial.print (" ");
+    Serial.println (digitalRead(PIN_2_POS_SW_RIGHT)); 
+    
+  }
+
+  // update LED
+  if (count % 200 == 0)
+    digitalWrite(PIN_LED_GREEN, HIGH);
+  else
+    digitalWrite(PIN_LED_GREEN, LOW);
+
+
 
   // handle special case of arming AutoQuad
   if (analog[0] < 450 && analog[1] > 1000)
