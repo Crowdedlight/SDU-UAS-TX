@@ -14,6 +14,8 @@ def main():
     thrust = 0
     yaw = 0
 
+    movementAmount = 1
+
     pygame.init()
 
     BLACK = (0, 0, 0)
@@ -23,7 +25,7 @@ def main():
 
     windowSurface.fill(BLACK)
 
-    rate = rospy.Rate(10)
+    rate = rospy.Rate(50)
 
     while not rospy.is_shutdown():
 
@@ -35,21 +37,29 @@ def main():
         # get key current state
         keys = pygame.key.get_pressed()
         if keys[K_LEFT]:
-            roll -= 1
+            roll -= movementAmount
+            if roll < -100: roll = -100
         elif keys[K_RIGHT]:
-            roll += 1
+            roll += movementAmount
+            if roll > 100: roll = 100
         if keys[K_DOWN]:
-            pitch -= 1
+            pitch -= movementAmount
+            if pitch < -100: pitch = -100
         elif keys[K_UP]:
-            pitch += 1
+            pitch += movementAmount
+            if pitch > 100: pitch = 100
         if keys[K_s]:
-            thrust -= 1
+            thrust -= movementAmount
+            if thrust < 0: thrust = 0
         elif keys[K_w]:
-            thrust += 1
+            thrust += movementAmount
+            if thrust > 100: thrust = 100
         if keys[K_a]:
-            yaw -= 1
+            yaw -= movementAmount
+            if yaw < -100: yaw = -100
         elif keys[K_d]:
-            yaw += 1
+            yaw += movementAmount
+            if yaw > 100: yaw = 100
 
         if keys[K_SPACE]:
             thrust = 0
