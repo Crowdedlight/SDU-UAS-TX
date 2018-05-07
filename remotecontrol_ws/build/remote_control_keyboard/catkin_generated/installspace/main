@@ -1,5 +1,0 @@
-#! /usr/bin/env python
-import remote_control_keyboard.controller
-
-if __name__ == '__main__':
-    remote_control_keyboard.controller.main()

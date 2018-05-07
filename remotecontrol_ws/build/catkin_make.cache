@@ -1,2 +1,0 @@
-remote_control:remote_control_keyboard
--DCATKIN_DEVEL_PREFIX=/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/devel -DCMAKE_INSTALL_PREFIX=/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/install -G Unix Makefiles

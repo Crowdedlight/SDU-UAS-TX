@@ -1,8 +1,0 @@
-prefix=/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/devel
-
-Name: remote_control
-Description: Description of remote_control
-Version: 0.0.0
-Cflags: -I/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/devel/include
-Libs: -L/home/crow/Documents/SDU-UAS-TX/remotecontrol_ws/devel/lib 
-Requires: 
