@@ -176,16 +176,18 @@ void loop()
   analog[4] = analogRead(PIN_3_POS_SW_LEFT);
   analog[5] = analogRead(PIN_3_POS_SW_RIGHT);
   analog[6] = analogRead(PIN_POT);
-  analog[7] = analogRead(PIN_BATT_VOLT);
+  analog[7] = analogRead(PIN_BATT_VOLT) * (5.0 / 1023.0)*1000; // reference voltage is 5, so this will give the half voltage in mv
 
   int left = digitalRead(PIN_2_POS_SW_LEFT);
   int right = digitalRead(PIN_2_POS_SW_RIGHT);
 
-  if(analog[7] < 360)
+  // if the half voltage comes under 3400, then one of the cells will be at that voltage or below, and we need to charge
+  if(analog[7] < 3400)
   {
    tone(PIN_BUZZER,1000);
   }
-  else if(Serial.available() && right)
+  
+  if(Serial.available() && right)
   {
     // setup JSON
     StaticJsonBuffer<100> jsonBuffer;
@@ -244,7 +246,7 @@ void loop()
     ppm[1] = (950-(analog[3]-60))*outputRange/950 + offset; // roll (aileron)
     ppm[2] = (analog[2]-65)*outputRange/910 + offset; // pitch (elevator)
     ppm[3] = (955-(analog[1]-60))*700/955 + 1150; // yaw (rudder)
-    /*
+  
     Serial.print (analog[0]);
     Serial.print (" ");
     Serial.print (analog[1]);
@@ -268,24 +270,7 @@ void loop()
     Serial.print (digitalRead(PIN_2_POS_SW_LEFT));
     Serial.print (" ");
     Serial.println (digitalRead(PIN_2_POS_SW_RIGHT)); 
-    */
   }
-
-    Serial.print (ppm[0]);
-    Serial.print (" ");
-    Serial.print (ppm[1]);
-    Serial.print (" ");
-    Serial.print (ppm[2]);
-    Serial.print (" ");
-    Serial.print (ppm[3]);
-    Serial.print (" ");
-    Serial.print (ppm[4]);
-    Serial.print (" ");
-    Serial.print (ppm[5]);
-    Serial.print (" ");
-    Serial.print (ppm[6]);
-    Serial.print (" ");                       
-    Serial.println (ppm[7]);
 
   // update LED
   if (count % 200 == 0)
