@@ -1,0 +1,5 @@
+#! /usr/bin/env python
+import marker_attitude.MarkerFinder
+
+if __name__ == '__main__':
+    marker_attitude.MarkerFinder.main()
