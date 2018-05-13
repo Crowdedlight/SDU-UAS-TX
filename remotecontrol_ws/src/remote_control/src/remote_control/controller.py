@@ -8,6 +8,12 @@ import csv
 import serial
 import json
 
+import cv2
+
+
+cv2.aruco
+
+
 from remote_control.msg import set_controller
 
 class remote_control:
@@ -18,11 +24,12 @@ class remote_control:
 
         # parameters
         self.ser = serial.Serial(port='/dev/ttyUSB0', baudrate=115200)
+        self.output_range = 700
 
         # Subscribe to get height
         self.sub_control = rospy.Subscriber("/remote_control/set_controller", set_controller, self.callback)
 
-    def clampProcentage(self, data):
+    def clampPercentage(self, data):
 
         # clamp every channel. All but thrust have same rules of going from -100 to 100
         if data.thrust < 0: data.thrust = 0
@@ -39,18 +46,18 @@ class remote_control:
 
         return data
 
-    def Procent_to_ppm(self, procent, type=""):
+    def Percent_to_ppm(self, percent, type=""):
         # RPY    => 3.50*procent+1500
         # Thrust => 7*procent+1150
 
         if type == "thrust":
-            return 7.0*procent+1150
+            return 7.0 * percent + 1150
         else:
-            return 3.50*procent+1500
+            return self.output_range / 100 * percent + 1500
 
     def callback(self, msg):
         # rospy.loginfo(msg)
-        data = self.clampProcentage(msg)
+        data = self.clampPercentage(msg)
 
         # change msg to ppm values
         # thrust = 0-100%
@@ -61,10 +68,10 @@ class remote_control:
         # 0% => 1500
         # -100% => 1150
 
-        thrust = self.Procent_to_ppm(data.thrust, "thrust")
-        roll = self.Procent_to_ppm(data.roll)
-        pitch = self.Procent_to_ppm(data.pitch)
-        yaw = self.Procent_to_ppm(data.yaw)
+        thrust = self.Percent_to_ppm(data.thrust, "thrust")
+        roll = self.Percent_to_ppm(data.roll)
+        pitch = self.Percent_to_ppm(data.pitch)
+        yaw = self.Percent_to_ppm(data.yaw)
 
         jsonMsg = {"t": thrust,
                    "r": roll,
