@@ -10,6 +10,7 @@ project(marker_attitude)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_generation
+  std_msgs
   rospy
 )
 
@@ -68,6 +69,7 @@ add_message_files(
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
   DEPENDENCIES
+  geometry_msgs
   #geometry_msgs#   mavros_msgs
 )
 

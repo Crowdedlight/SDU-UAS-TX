@@ -7,8 +7,9 @@ import yaml
 from cv_bridge import CvBridge, CvBridgeError
 import rospy
 from marker_attitude.msg import marker_info
-from std_msgs.msg import Vector3
+from geometry_msgs.msg import Vector3
 import MarkerInfo
+import rospkg
 
 class VideoMarkerFinder:
 
@@ -20,6 +21,9 @@ class VideoMarkerFinder:
 		self.arucoParams = aruco.DetectorParameters_create()
 		self.running = True
 
+		rospack = rospkg.RosPack()
+		self.path = rospack.get_path('marker_attitude')
+		print(self.path)
 
 		ret, self.current_frame = self.camera.read()
 		self.t0 = time()
@@ -28,7 +32,7 @@ class VideoMarkerFinder:
 		self.rvec = None
 		self.tvec = None
 		self.ros_topic = "/markerlocator/attitude"
-		self.marker_attitude_pub = rospy.Publisher(self.ros_topic, marker_info)
+		self.marker_attitude_pub = rospy.Publisher(self.ros_topic, marker_info, queue_size=0)
 
 		self.markers_detected = False
 
@@ -38,8 +42,9 @@ class VideoMarkerFinder:
 			self.calibration()
 
 	def publish_to_ros(self, id):
-		msgRvec = Vector3(self.rvec[0],self.rvec[1],self.rvec[2])
-		msgTvec = Vector3(self.tvec[0],self.tvec[1],self.tvec[2])
+		print(self.rvec)
+		msgRvec = Vector3(self.rvec[0,0,0],self.rvec[0,0,1],self.rvec[0,0,2])
+		msgTvec = Vector3(self.tvec[0,0,0],self.tvec[0,0,1],self.tvec[0,0,2])
 		msg = marker_info(rvec = msgRvec, tvec = msgTvec, time = self.time_diff, id = id)
 		try:
 			self.marker_attitude_pub.publish(msg)
@@ -52,7 +57,7 @@ class VideoMarkerFinder:
 		self.show_video_with_markers()
 
 	def calibration(self):
-		with open('calibration_webcam_stdsize.yaml') as f:
+		with open(self.path+'/calibration_webcam_stdsize.yaml') as f:
 			self.calibration_params = yaml.load(f)
 		self.camera_matrix = np.array(self.calibration_params.get('camera_matrix'))
 		self.dist_coeffs = np.array(self.calibration_params.get('dist_coeff'))
@@ -91,8 +96,8 @@ class VideoMarkerFinder:
 				self.publish_to_ros(self.ids[i])
 
 				self.calc_rotation_and_translation_matrix()
-				self.some_vec = np.cross(self.rmat[:,0], self.rmat[:,2])
-				print self.rvec
+				#self.some_vec = np.cross(self.rmat[:,0], self.rmat[:,2])
+				#print self.rvec
 				#print 'marker{}'.format(i)
 				#print tvec
 
@@ -125,12 +130,14 @@ class VideoMarkerFinder:
 
 def main():
 	print 'Starting...'
+	rospy.init_node('marker_attitude')
+	#rospy.sleep(1)
 
 	videoDevice = 1
 	aruco_dict = aruco.Dictionary_get(aruco.DICT_7X7_250)
 	vmf = VideoMarkerFinder(aruco_dict, videoDevice)
 
-	while vmf.running == True:
+	while not rospy.is_shutdown():
 		vmf.do_the_magic()
 		vmf.handle_keyboard_events()
 
