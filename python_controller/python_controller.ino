@@ -200,6 +200,7 @@ void loop()
     // JsonBuffer with all the other nodes of the object tree.
     // Memory is freed when jsonBuffer goes out of scope.
     JsonObject& root = jsonBuffer.parseObject(Serial);
+    Serial.println(root)
     // Test if parsing succeeds.
     if (!root.success()) {
       Serial.println("parseObject() failed");

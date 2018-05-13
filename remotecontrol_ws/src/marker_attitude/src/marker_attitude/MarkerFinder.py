@@ -38,7 +38,7 @@ class VideoMarkerFinder:
 
 		self.calibrated = True
 		if self.calibrated:
-			self.maker_length = 7
+			self.maker_length = 7.3
 			self.calibration()
 
 	def publish_to_ros(self, id):
@@ -144,5 +144,5 @@ def main():
 	# When everything done, release the capture
 	vmf.close_all_windows()
 
-
-main()
+if __name__ == "__main__":
+	main()

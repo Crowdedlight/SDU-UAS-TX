@@ -1,23 +1,35 @@
 import rospy
 import numpy as np
 from remote_control.msg import set_controller
+from marker_attitude.msg import marker_info
+import cv2
+import math
+
+def calc_angles(rot):
+	roll = math.atan2(rot[1,0],rot[0,0])*180/math.pi
+	pitch = math.atan2(-rot[2,0],math.sqrt(rot[2,1]**2+rot[2,2]**2))*180/math.pi
+	yaw = math.atan2(rot[2,1],rot[2,2])*180/math.pi
+
+	# rospy.loginfo("roll: {}, pitch: {}, yaw: {}".format(roll,pitch,yaw))
+
+	return roll, pitch, yaw
 
 class Controller:
 	def __init__(self):
 		self.command_pub = rospy.Publisher("/remote_control/set_controller", set_controller, queue_size=10)
 
-		rospy.Subscriber("mavros/local_position/pose", PoseStamped, self.cb_pose_update)
+		rospy.Subscriber("/markerlocator/attitude", marker_info, self.cb_marker_update)
+		rospy.loginfo("Initializing")
+		# rospy.Service("drone_controller/new_setpoint", Setpoint, self.new_setpoint)
 
-		rospy.Service("drone_controller/new_setpoint", Setpoint, self.new_setpoint)
-
-
+		self.thrust = 50
 		self.busy = False
 		self.follow_camera = False
 		self.is_landing = False
 		self.landed = False
 
 		self.GSD = 2.0/800
-		self.setpoint = np.array([[0],[0],[2],[180]])
+		self.setpoint = np.array([[0],[0],[40],[180]])
 		self.current_pose = np.array([[0],[0],[0],[0]])
 		self.marker_quality = 0
 
@@ -29,111 +41,71 @@ class Controller:
 		self.prev_error = np.array([[0],[0],[0],[0]])
 		self.prev_time = None
 
-	def new_setpoint(self, req):
-		if not self.busy:
-			self.busy = True
-			self.follow_camera = False
-			self.is_landing = False
-			self.landed = False
-			self.setpoint = np.array([[req.x],[req.y],[req.z],[req.yaw]])
-
-			return True, "New setpoint registered ([{}], [{}], [{}], [{}])".format(req.x,req.y,req.z,req.yaw)
-
-		return False, "Can't execute command. Controller is busy."
-
-	def set_PID(self, req):
-		self.P = req.P
-		self.I = req.I
-		self.D = req.D
-
-		return True, "New PID constants registered (P={}, I={}, D={})".format(self.P,self.I,self.D)
-
-	def return_to_marker(self, req):
-		if not self.busy:
-			self.busy = True
-			self.follow_camera = False
-			self.is_landing = False
-			self.landed = False
-			self.setpoint = np.array([[0],[0],[2],[180]])
-
-		else:
-			return False, "Can't execute command. Controller is busy."
-
-		return True, "Command acknowledged."
-
-	def follow_marker(self, req):
-		if not self.busy:
-			self.busy = True
-			self.follow_camera = True
-			self.is_landing = False
-			self.landed = False
-			# the drone should stay at the current altitude, while following the marker
-			# self.setpoint[2] = self.current_pose[2]
-
-		else:
-			return False, "Can't execute command. Controller is busy."
-
-		return True, "Command acknowledged."
-
-	def land_on_marker(self, req):
-		if not self.busy:
-			if self.ready_to_land:
-				self.is_landing = True
-				self.landed = False
-				self.setpoint[2] = 2
-				return True, "Attempting to land on marker"
-
-			return False, "Can't land. Not above marker yet"
-
-		return False, "Can't execute command. Controller is busy."
-
-	def goto_vantage_point(self, req):
-		if not self.busy:
-			self.busy = True
-			self.follow_camera = False
-			self.is_landing = False
-			self.landed = False
-			self.setpoint = np.array([[3], [4], [10], [180]],dtype=float)
-		else:
-			return False, "Can't execute command. Controller is busy."
-
-		return True, "Command acknowledged."
-
-	def cancel_current_cmd(self, req):
-		self.setpoint = self.current_pose
-		self.busy = False
-		self.is_landing = False
-		self.follow_camera = False
-		self.landed = False
-
-		return True, "Cancelled current command"
-
-	def cb_pose_update(self, msg):
-		x = msg.pose.position.x
-		y = msg.pose.position.y
-		z = msg.pose.position.z
-		_, _, yaw = quaternion_to_euler_angle(msg.pose.orientation)
-		self.current_pose = np.array([[x],[y],[z],[yaw]])
-
 	def cb_marker_update(self, msg):
-		x = msg.x
-		y = msg.y
-		theta = msg.theta * 180 / pi
-		self.marker_quality = msg.quality
+		rvec = msg.rvec
+		x = msg.tvec.x
+		y = msg.tvec.y
+		z = msg.tvec.z
+		time_stamp = msg.time
+		id = msg.id
+		r = cv2.Rodrigues(np.array([rvec.x,rvec.y,rvec.z]))
+		rot = r[0]
+		_,_,yaw = calc_angles(rot)
+		if yaw < 0:
+			yaw += 360
 
-		# the camera is not aligned with the drone
-		x_error = -y*self.GSD
-		y_error = -x*self.GSD
-		z_error = self.setpoint[2] - self.current_pose[2]
+		self.current_pose = np.array([[x],[y],[z],[yaw]])
+		error = self.setpoint - self.current_pose
 
-		angle_error = 0
-		if sqrt(x_error**2 + y_error**2) < 2:
-			angle_error = (-theta - 90)
 
-		self.marker_error = np.array([[x_error],[y_error],[z_error],[angle_error]])
+		camera2marker = np.array([[rot[0,0],rot[0,1],rot[0,2],0],
+								[rot[1,0],rot[1,1],rot[1,2],0],
+								[rot[2,0],rot[2,1],rot[2,2],0],
+								[0,0,0,1]])
 
-	def cb_GSD_update(self, msg):
-		self.GSD = msg.data
+		marker2drone = np.array([[0,0,-1,0],
+								 [-1,0,0,0],
+								 [0,1,0,0],
+								 [0,0,0,1]])
+
+		camera2drone = np.matmul(camera2marker, marker2drone)
+		drone2camera = np.linalg.inv(camera2drone)
+
+		# rospy.loginfo("x: {}, y: {}, z: {}, yaw: {}".format(error[0],error[1],error[2],error[3]))
+		# rospy.loginfo("x: {}, y: {}, z: {}, yaw: {}".format(cmd[0], cmd[1], cmd[2], cmd[3]))
+
+		p = np.array([error[0],error[1],error[2],[1]])
+		p = np.matmul(drone2camera,p)
+
+		rospy.loginfo("x: {}, y: {}, z: {}, yaw: {}".format(p[0],p[1],p[2],error[3]))
+
+		error = np.array([p[0],p[1],p[2],error[3]])
+		cmd = self.pid_control(error)
+
+		new_thrust = self.thrust + cmd[2]
+
+		if new_thrust > 100:
+			self.thrust = 100
+		elif new_thrust < 0:
+			self.thrust = 0
+		else:
+			self.thrust = new_thrust
+
+		msg = set_controller(thrust = self.thrust, roll = cmd[0,0], pitch = cmd[1,0], yaw = cmd[3,0])
+		self.command_pub.publish(msg)
+		# rospy.loginfo(p)
+		# cmd = self.transform_cmd(cmd,camera2drone)
+
+	def transform_cmd(self, cmd, transform):
+		p_cam = np.array([cmd[0],cmd[1],cmd[2],[1]])
+
+		p_drone = np.matmul(transform,p_cam)
+
+		return np.array([p_drone[0],p_drone[1],p_drone[2],cmd[3]])
+
+	def run(self):
+		pass
+
 
 	def pid_control(self,error):
 		curr_time = rospy.get_time()
@@ -151,7 +123,7 @@ class Controller:
 		cmd = self.P*error + self.I*self.int_sum + self.D*dedt
 
 		return cmd
-
+	'''
 	def run(self):
 
 		error = np.array([[0],[0],[0],[0]])
@@ -206,15 +178,14 @@ class Controller:
 		else:
 			self.landed = True
 			self.is_landing = False
-
+'''
 def main():
-	rospy.init_node("mini_controller")
+	rospy.init_node("camera_controller")
 	rospy.sleep(1)
 
 	controller = Controller()
 
 	rate = rospy.Rate(50)
-
 	while not rospy.is_shutdown():
 		controller.run()
 		rate.sleep()
