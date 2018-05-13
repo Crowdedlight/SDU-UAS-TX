@@ -244,7 +244,7 @@ void loop()
     ppm[1] = (950-(analog[3]-60))*outputRange/950 + offset; // roll (aileron)
     ppm[2] = (analog[2]-65)*outputRange/910 + offset; // pitch (elevator)
     ppm[3] = (955-(analog[1]-60))*700/955 + 1150; // yaw (rudder)
-    /*
+    
     Serial.print (analog[0]);
     Serial.print (" ");
     Serial.print (analog[1]);
@@ -268,24 +268,8 @@ void loop()
     Serial.print (digitalRead(PIN_2_POS_SW_LEFT));
     Serial.print (" ");
     Serial.println (digitalRead(PIN_2_POS_SW_RIGHT)); 
-    */
+    
   }
-
-    Serial.print (ppm[0]);
-    Serial.print (" ");
-    Serial.print (ppm[1]);
-    Serial.print (" ");
-    Serial.print (ppm[2]);
-    Serial.print (" ");
-    Serial.print (ppm[3]);
-    Serial.print (" ");
-    Serial.print (ppm[4]);
-    Serial.print (" ");
-    Serial.print (ppm[5]);
-    Serial.print (" ");
-    Serial.print (ppm[6]);
-    Serial.print (" ");                       
-    Serial.println (ppm[7]);
 
   // update LED
   if (count % 200 == 0)
