@@ -38,7 +38,7 @@ class VideoMarkerFinder:
 
 		self.calibrated = True
 		if self.calibrated:
-			self.maker_length = 7
+			self.maker_length = 7.3
 			self.calibration()
 
 	def publish_to_ros(self, id):
@@ -123,7 +123,7 @@ class VideoMarkerFinder:
 			filename = strftime("%Y-%m-%d %H-%M-%S")
 			cv2.imwrite("output/%s.png" % filename, self.current_frame)
 
-	def close_all_windows(self):
+	def close_all_windows(self):Ywmk96WDif,ij4gws7[G
 		self.camera.release()
 		cv2.destroyAllWindows()
 
@@ -144,3 +144,7 @@ def main():
 	# When everything done, release the capture
 	vmf.close_all_windows()
 
+
+
+if __name__ == "__main__":
+	main()

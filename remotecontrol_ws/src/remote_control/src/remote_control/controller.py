@@ -67,11 +67,13 @@ class remote_control:
         # 100% => 1850
         # 0% => 1500
         # -100% => 1150
+	
+	rospy.loginfo(msg)
 
-        thrust = self.Percent_to_ppm(data.thrust, "thrust")
-        roll = self.Percent_to_ppm(data.roll)
-        pitch = self.Percent_to_ppm(data.pitch)
-        yaw = self.Percent_to_ppm(data.yaw)
+        thrust = self.Percent_to_ppm(int(data.thrust), "thrust")
+        roll = self.Percent_to_ppm(int(data.roll))
+        pitch = self.Percent_to_ppm(int(data.pitch))
+        yaw = self.Percent_to_ppm(int(data.yaw))
 
         jsonMsg = {"t": thrust,
                    "r": roll,
@@ -105,7 +107,7 @@ def main():
 
     while not rospy.is_shutdown():
         line = rc.ser.readline()
-        rospy.loginfo(line)
+#        rospy.loginfo(line)
 
     rospy.spin()
 
