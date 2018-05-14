@@ -42,7 +42,7 @@ class VideoMarkerFinder:
 			self.calibration()
 
 	def publish_to_ros(self, id):
-		print(self.rvec)
+		#print(self.rvec)
 		msgRvec = Vector3(self.rvec[0,0,0],self.rvec[0,0,1],self.rvec[0,0,2])
 		msgTvec = Vector3(self.tvec[0,0,0],self.tvec[0,0,1],self.tvec[0,0,2])
 		msg = marker_info(rvec = msgRvec, tvec = msgTvec, time = self.time_diff, id = id)
@@ -137,12 +137,10 @@ def main():
 	aruco_dict = aruco.Dictionary_get(aruco.DICT_7X7_250)
 	vmf = VideoMarkerFinder(aruco_dict, videoDevice)
 
-	while not rospy.is_shutdown():
+	while vmf.running == True:#not rospy.is_shutdown():
 		vmf.do_the_magic()
 		vmf.handle_keyboard_events()
 
 	# When everything done, release the capture
 	vmf.close_all_windows()
 
-
-main()
