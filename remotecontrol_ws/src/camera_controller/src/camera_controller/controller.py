@@ -24,11 +24,8 @@ class Controller:
 
 		self.thrust = 50
 		self.busy = False
-		self.follow_camera = False
-		self.is_landing = False
-		self.landed = False
 
-		self.GSD = 2.0/800
+		# Relative to the cameras coordinate system
 		self.setpoint = np.array([[0],[0],[100],[180]])
 		self.current_pose = np.array([[0],[0],[0],[0]])
 		self.marker_quality = 0
@@ -40,6 +37,13 @@ class Controller:
 		self.P_rp = 0.8
 		self.I_rp = 0  # .002
 		self.D_rp = 0.000
+
+		# Relative to the drones coordinate system
+		#   x     y       z    theta
+		# roll, pitch, thrust, yaw
+		self.P = np.array([[0.1],[0.1],[0.1],[0.1]])
+		self.I = np.array([[0],[0],[0],[0]])
+		self.D = np.array([[0],[0],[0],[0]])
 
 		self.int_sum = np.array([[0],[0],[0],[0]])
 		self.prev_error = np.array([[0],[0],[0],[0]])
@@ -62,6 +66,8 @@ class Controller:
 		error = self.setpoint - self.current_pose
 		# error[2] = 0
 
+		# rospy.loginfo(self.current_pose)
+
 		camera2marker = np.array([[rot[0,0],rot[0,1],rot[0,2],0],
 								[rot[1,0],rot[1,1],rot[1,2],0],
 								[rot[2,0],rot[2,1],rot[2,2],0],
@@ -81,7 +87,7 @@ class Controller:
 		p = np.array([error[0],error[1],error[2],[1]])
 		p = np.matmul(drone2camera,p)
 
-		rospy.loginfo("x: {}, y: {}, z: {}, yaw: {}".format(p[0],p[1],p[2],error[3]))
+		# rospy.loginfo("x: {}, y: {}, z: {}, yaw: {}".format(p[0],p[1],p[2],error[3]))
 
 		error = np.array([p[0],p[1],p[2],error[3]])
 		cmd = self.pid_control(error)
@@ -97,7 +103,7 @@ class Controller:
 
 		msg = set_controller(thrust = self.thrust, roll = cmd[0,0], pitch = cmd[1,0], yaw = cmd[3,0])
 		self.command_pub.publish(msg)
-		# rospy.loginfo(p)
+		rospy.loginfo("t: {}, r: {}, p: {}, y: {}".format(self.thrust, cmd[0,0], cmd[1,0], cmd[3,0]))
 		# cmd = self.transform_cmd(cmd,camera2drone)
 
 	def transform_cmd(self, cmd, transform):
@@ -126,8 +132,10 @@ class Controller:
 
 		self.prev_time = curr_time
 
-		cmd[0:1,:] = self.P_rp*error[0:1,:] + self.I_rp*self.int_sum[0:1,:] + self.D_rp*dedt[0:1,:]
-		cmd[2:3,:] = self.P_ty * error[2:3, :] + self.I_ty * self.int_sum[2:3, :] + self.D_ty * dedt[2:3, :]
+		cmd = self.P*error + self.I*self.int_sum + self.D*dedt
+
+		# cmd[0:1,:] = self.P_rp*error[0:1,:] + self.I_rp*self.int_sum[0:1,:] + self.D_rp*dedt[0:1,:]
+		# cmd[2:3,:] = self.P_ty * error[2:3, :] + self.I_ty * self.int_sum[2:3, :] + self.D_ty * dedt[2:3, :]
 
 		return cmd
 	'''
