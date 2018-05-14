@@ -33,9 +33,13 @@ class Controller:
 		self.current_pose = np.array([[0],[0],[0],[0]])
 		self.marker_quality = 0
 
-		self.P = 0.08
-		self.I = 0#.002
-		self.D = 0.000
+		self.P_ty = 0.08
+		self.I_ty = 0#.002
+		self.D_ty = 0.000
+
+		self.P_rp = 0.8
+		self.I_rp = 0  # .002
+		self.D_rp = 0.000
 
 		self.int_sum = np.array([[0],[0],[0],[0]])
 		self.prev_error = np.array([[0],[0],[0],[0]])
@@ -109,6 +113,8 @@ class Controller:
 
 	def pid_control(self,error):
 		curr_time = rospy.get_time()
+
+		cmd = np.array([[0],[0],[0],[0]])
 		dedt = np.array([[0],[0],[0],[0]])
 		de = error - self.prev_error
 		if self.prev_time != None:
@@ -120,7 +126,8 @@ class Controller:
 
 		self.prev_time = curr_time
 
-		cmd = self.P*error + self.I*self.int_sum + self.D*dedt
+		cmd[0:1,:] = self.P_rp*error[0:1,:] + self.I_rp*self.int_sum[0:1,:] + self.D_rp*dedt[0:1,:]
+		cmd[2:3,:] = self.P_ty * error[2:3, :] + self.I_ty * self.int_sum[2:3, :] + self.D_ty * dedt[2:3, :]
 
 		return cmd
 	'''
