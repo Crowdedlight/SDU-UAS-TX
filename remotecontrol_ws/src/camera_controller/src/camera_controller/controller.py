@@ -29,17 +29,17 @@ class Controller:
 		self.landed = False
 
 		self.GSD = 2.0/800
-		self.setpoint = np.array([[0],[0],[100],[180]])
+		self.setpoint = np.array([[0],[0],[100],[150]])
 		self.current_pose = np.array([[0],[0],[0],[0]])
 		self.marker_quality = 0
 
-		self.P_ty = 0.08
+		self.P_ty = 0.1
 		self.I_ty = 0#.002
-		self.D_ty = 0.000
+		self.D_ty = 0.02
 
-		self.P_rp = 0.8
+		self.P_rp = 0.05
 		self.I_rp = 0  # .002
-		self.D_rp = 0.000
+		self.D_rp = 0.02
 
 		self.int_sum = np.array([[0],[0],[0],[0]])
 		self.prev_error = np.array([[0],[0],[0],[0]])
@@ -126,8 +126,8 @@ class Controller:
 
 		self.prev_time = curr_time
 
-		cmd[0:1,:] = self.P_rp*error[0:1,:] + self.I_rp*self.int_sum[0:1,:] + self.D_rp*dedt[0:1,:]
-		cmd[2:3,:] = self.P_ty * error[2:3, :] + self.I_ty * self.int_sum[2:3, :] + self.D_ty * dedt[2:3, :]
+		cmd[0:2,:] = self.P_rp*error[0:2,:] + self.I_rp*self.int_sum[0:2,:] + self.D_rp*dedt[0:2,:]
+		cmd[2:4,:] = self.P_ty * error[2:4, :] + self.I_ty * self.int_sum[2:4, :] + self.D_ty * dedt[2:4, :]
 
 		return cmd
 	'''
