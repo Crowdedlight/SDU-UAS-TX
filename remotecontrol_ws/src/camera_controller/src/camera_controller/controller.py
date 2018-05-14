@@ -28,15 +28,6 @@ class Controller:
 		# Relative to the cameras coordinate system
 		self.setpoint = np.array([[0],[0],[100],[180]])
 		self.current_pose = np.array([[0],[0],[0],[0]])
-		self.marker_quality = 0
-
-		self.P_ty = 0.08
-		self.I_ty = 0#.002
-		self.D_ty = 0.000
-
-		self.P_rp = 0.8
-		self.I_rp = 0  # .002
-		self.D_rp = 0.000
 
 		# Relative to the drones coordinate system
 		#   x     y       z    theta
@@ -134,66 +125,8 @@ class Controller:
 
 		cmd = self.P*error + self.I*self.int_sum + self.D*dedt
 
-		# cmd[0:1,:] = self.P_rp*error[0:1,:] + self.I_rp*self.int_sum[0:1,:] + self.D_rp*dedt[0:1,:]
-		# cmd[2:3,:] = self.P_ty * error[2:3, :] + self.I_ty * self.int_sum[2:3, :] + self.D_ty * dedt[2:3, :]
-
 		return cmd
-	'''
-	def run(self):
-
-		error = np.array([[0],[0],[0],[0]])
-
-		rospy.loginfo(self.setpoint)
-
-		if self.follow_camera:# and self.marker_quality > 0.2:
-			error = self.marker_error
-
-			# adjust height slowly if landing
-			if self.is_landing and self.current_pose[2] < 2.5:
-				self.setpoint[2] = self.setpoint[2] - 0.005
-
-		else:
-			# calculate angle and translation from 2D homogenous transformations
-			x,y,angle = transform2D(self.current_pose,self.setpoint)
-			error = self.setpoint - self.current_pose
-			error[0] = x; error[1] = y; error[3] = -angle
-
-		if abs(error[0]) < 0.5 and abs(error[1]) < 0.5 and abs(error[2]) < 0.5 and abs(error[3]) < 0.5 and self.busy:
-			self.busy = False
-
-			if self.follow_camera:
-				self.ready_to_land = True
-
-				if self.is_landing:
-					# keep going
-					self.busy = True
-
-				if self.is_landing and self.current_pose[2] < 1:
-					# stop following marker and land where you are
-					self.setpoint = self.current_pose
-					self.setpoint[2] = 0
-					self.follow_camera = False
-					self.is_landing = False
-
-
-		cmd = self.pid_control(error)
-
-		command = MoveDrone(x = cmd[0],#x_error,
-							y = cmd[1],#y_error,
-							z = cmd[2],#z_error,
-							yaw = cmd[3])#angle_error)
-
-		# don't try to regulate the drone if it has landed
-		if not self.landed:
-			self.command_pub.publish(command)
-
-		#
-		if self.current_pose[2] > 0.15:
-			self.landed = False
-		else:
-			self.landed = True
-			self.is_landing = False
-'''
+		
 def main():
 	rospy.init_node("camera_controller")
 	rospy.sleep(1)

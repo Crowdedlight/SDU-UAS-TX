@@ -134,7 +134,7 @@ def main():
 	rospy.init_node('marker_attitude')
 	#rospy.sleep(1)
 
-	videoDevice = 0
+	videoDevice = 1
 	aruco_dict = aruco.Dictionary_get(aruco.DICT_7X7_250)
 	vmf = VideoMarkerFinder(aruco_dict, videoDevice)
 
