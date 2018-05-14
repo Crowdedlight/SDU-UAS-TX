@@ -9,7 +9,17 @@ import rospy
 from marker_attitude.msg import marker_info
 from geometry_msgs.msg import Vector3
 import MarkerInfo
+import math
 import rospkg
+
+def calc_angles(rot):
+	roll = math.atan2(rot[1,0],rot[0,0])*180/math.pi
+	pitch = math.atan2(-rot[2,0],math.sqrt(rot[2,1]**2+rot[2,2]**2))*180/math.pi
+	yaw = math.atan2(rot[2,1],rot[2,2])*180/math.pi
+
+	# rospy.loginfo("roll: {}, pitch: {}, yaw: {}".format(roll,pitch,yaw))
+
+	return roll, pitch, yaw
 
 class VideoMarkerFinder:
 
@@ -20,6 +30,8 @@ class VideoMarkerFinder:
 		self.aruco_dict = dict
 		self.arucoParams = aruco.DetectorParameters_create()
 		self.running = True
+
+		self.prev_yaw = 0
 
 		rospack = rospkg.RosPack()
 		self.path = rospack.get_path('marker_attitude')
@@ -90,20 +102,36 @@ class VideoMarkerFinder:
 			for i in range(len(self.ids)):
 				self.rvec, self.tvec, _objPoints = aruco.estimatePoseSingleMarkers(self.corners[i], self.maker_length,
 																		 self.camera_matrix, self.dist_coeffs)
-				self.img_with_aruco = aruco.drawAxis(self.img_with_aruco, self.camera_matrix,
-													 self.dist_coeffs, self.rvec, self.tvec, 6)
+				self.calc_rotation_matrix()
 
-				self.publish_to_ros(self.ids[i])
+				# only publish and display if the orientation is correct
+				if not self.z_axis_flipped():
+					self.img_with_aruco = aruco.drawAxis(self.img_with_aruco, self.camera_matrix,
+														 self.dist_coeffs, self.rvec, self.tvec, 6)
+					self.publish_to_ros(self.ids[i])
+					rospy.loginfo("Here")
 
-				self.calc_rotation_and_translation_matrix()
 				#self.some_vec = np.cross(self.rmat[:,0], self.rmat[:,2])
 				#print self.rvec
 				#print 'marker{}'.format(i)
 				#print tvec
 
-	def calc_rotation_and_translation_matrix(self):
+	def z_axis_flipped(self):
+		# if the angle changes too quickly, then the axis has flipped
+		_,_,yaw = calc_angles(self.rmat)
+
+		dyaw = (yaw - self.prev_yaw) / self.time_diff
+		rospy.loginfo(dyaw)
+		self.prev_yaw = yaw
+
+		if abs(dyaw) > 1000:
+			return True
+
+		return False
+
+
+	def calc_rotation_matrix(self):
 		self.rmat, _ = cv2.Rodrigues(self.rvec)
-		self.tmat, _ = cv2.Rodrigues(self.tvec)
 
 	def show_video_with_markers(self):
 		self.img_with_aruco = cv2.flip(self.img_with_aruco, 1)
@@ -134,7 +162,7 @@ def main():
 	rospy.init_node('marker_attitude')
 	#rospy.sleep(1)
 
-	videoDevice = 1
+	videoDevice = 0
 	aruco_dict = aruco.Dictionary_get(aruco.DICT_7X7_250)
 	vmf = VideoMarkerFinder(aruco_dict, videoDevice)
 

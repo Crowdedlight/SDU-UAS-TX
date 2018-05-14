@@ -57,7 +57,7 @@ class Controller:
 		error = self.setpoint - self.current_pose
 		# error[2] = 0
 
-		# rospy.loginfo(self.current_pose)
+		rospy.loginfo(self.current_pose)
 
 		camera2marker = np.array([[rot[0,0],rot[0,1],rot[0,2],0],
 								[rot[1,0],rot[1,1],rot[1,2],0],
@@ -94,7 +94,7 @@ class Controller:
 
 		msg = set_controller(thrust = self.thrust, roll = cmd[0,0], pitch = cmd[1,0], yaw = cmd[3,0])
 		self.command_pub.publish(msg)
-		rospy.loginfo("t: {}, r: {}, p: {}, y: {}".format(self.thrust, cmd[0,0], cmd[1,0], cmd[3,0]))
+		# rospy.loginfo("t: {}, r: {}, p: {}, y: {}".format(self.thrust, cmd[0,0], cmd[1,0], cmd[3,0]))
 		# cmd = self.transform_cmd(cmd,camera2drone)
 
 	def transform_cmd(self, cmd, transform):
