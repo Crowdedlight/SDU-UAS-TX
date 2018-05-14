@@ -106,6 +106,7 @@ class VideoMarkerFinder:
 		self.tmat, _ = cv2.Rodrigues(self.tvec)
 
 	def show_video_with_markers(self):
+		self.img_with_aruco = cv2.flip(self.img_with_aruco, 1)
 		cv2.imshow('Markers', self.img_with_aruco)
 
 	def handle_keyboard_events(self):
@@ -123,7 +124,7 @@ class VideoMarkerFinder:
 			filename = strftime("%Y-%m-%d %H-%M-%S")
 			cv2.imwrite("output/%s.png" % filename, self.current_frame)
 
-	def close_all_windows(self):Ywmk96WDif,ij4gws7[G
+	def close_all_windows(self):
 		self.camera.release()
 		cv2.destroyAllWindows()
 

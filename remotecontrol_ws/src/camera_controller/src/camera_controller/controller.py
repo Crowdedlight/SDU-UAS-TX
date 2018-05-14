@@ -29,13 +29,13 @@ class Controller:
 		self.landed = False
 
 		self.GSD = 2.0/800
-		self.setpoint = np.array([[0],[0],[40],[180]])
+		self.setpoint = np.array([[0],[0],[100],[180]])
 		self.current_pose = np.array([[0],[0],[0],[0]])
 		self.marker_quality = 0
 
-		self.P = 0.4
+		self.P = 0.08
 		self.I = 0#.002
-		self.D = 0.001
+		self.D = 0.000
 
 		self.int_sum = np.array([[0],[0],[0],[0]])
 		self.prev_error = np.array([[0],[0],[0],[0]])
@@ -56,7 +56,7 @@ class Controller:
 
 		self.current_pose = np.array([[x],[y],[z],[yaw]])
 		error = self.setpoint - self.current_pose
-
+		# error[2] = 0
 
 		camera2marker = np.array([[rot[0,0],rot[0,1],rot[0,2],0],
 								[rot[1,0],rot[1,1],rot[1,2],0],
