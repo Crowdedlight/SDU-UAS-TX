@@ -81,8 +81,7 @@ boolean buzzer_state;
 enum states {
   manual, 
   manualToOffboard, 
-  offboard, 
-  offboardToManual 
+  offboard
 };
 
 states state = manual;
@@ -217,10 +216,6 @@ void loop()
         state = manual;
       }
 
-    break;
-
-    case offboardToManual:
-      //nothing atm...
     break;
 
     default:
