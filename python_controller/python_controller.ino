@@ -1,5 +1,3 @@
-#include <ArduinoJson.h>
-
 /***************************************************************************
 # SDU UAS Center TX firmware 
 # Copyright (c) 2018, Kjeld Jensen <kjen@mmmi.sdu.dk> <kj@kjen.dk>
@@ -80,7 +78,14 @@ short count;
 boolean led_state;
 boolean buzzer_state;
 
+enum states {
+  manual, 
+  manualToOffboard, 
+  offboard, 
+  offboardToManual 
+};
 
+states state = manual;
 
 /****************************************************************************/
 void setup()
@@ -164,10 +169,6 @@ ISR(TIMER1_COMPA_vect)
 /****************************************************************************/
 void loop()
 {
-  //put main code here
-  static int val = 1;
-  count ++;
-
   // read analog input
   analog[0] = analogRead(PIN_LEFT_Y);
   analog[1] = analogRead(PIN_LEFT_X);
@@ -181,34 +182,101 @@ void loop()
   int left = digitalRead(PIN_2_POS_SW_LEFT);
   int right = digitalRead(PIN_2_POS_SW_RIGHT);
 
+  //always do switch logic for 3-way switches and battery monitor
+  doSwitchLogic();
+
+  switch(state) {
+    case manual:
+      
+      doManual();
+      //if in manual and switch change for auto
+      if (right)
+      {
+        state = manualToOffboard;
+      }
+    break;
+
+    case manualToOffboard:
+      //clear buffer from serial for only getting fresh messages, then move to offboard
+      while(Serial.available())
+      {
+        Serial.read();
+      }
+
+      //move to offboard
+      state = offboard;
+    break;
+
+    case offboard:
+      //just do offboard
+      doOffboard();
+
+      //check for change to manual
+      if (!right)
+      {
+        state = manual;
+      }
+
+    break;
+
+    case offboardToManual:
+      //nothing atm...
+    break;
+
+    default:
+    break;
+  }
+}
+
+void doSwitchLogic()
+{
   // if the half voltage comes under 3400, then one of the cells will be at that voltage or below, and we need to charge
   if(analog[7] < 3400)
   {
    tone(PIN_BUZZER,1000);
   }
   
-  if(Serial.available() && right)
-  {
-    // setup JSON
-//    StaticJsonBuffer<100> jsonBuffer;
-//    DynamicJsonBuffer jsonBuffer;
-//    //String json = Serial.readStringUntil("\n");
-//  
-//    // Root of the object tree.
-//    //Serial.println(json);
-//    //
-//    // It's a reference to the JsonObject, the actual bytes are inside the
-//    // JsonBuffer with all the other nodes of the object tree.
-//    // Memory is freed when jsonBuffer goes out of scope.
-//    JsonObject& root = jsonBuffer.parseObject(Serial);
-//    Serial.println(root)
-//    // Test if parsing succeeds.
-//    if (!root.success()) {
-//      Serial.println("parseObject() failed");
-//      return;
-//    }
+   // update LED
+  if (count % 200 == 0)
+    digitalWrite(PIN_LED_GREEN, HIGH);
+  else
+    digitalWrite(PIN_LED_GREEN, LOW);
 
-    //read from serial until newline => Using bytes to be most efficient
+  // handle special case of arming AutoQuad
+  if (analog[0] < 450 && analog[1] > 1000)
+  {
+    ppm[0] = 1150;
+    ppm[3] = 1850;  
+  }
+
+  // handle left 3-way switch
+  if (analog[4] < 300)
+    ppm[4] = 1150;
+  else if (analog[4] < 700)
+    ppm[4] = 1500;
+  else
+    ppm[4] = 1850;
+  
+  // handle right 3-way switch
+  if (analog[5] < 300)
+    ppm[5] = 1150;
+  else if (analog[5] < 700)
+    ppm[5] =  1500;
+  else
+    ppm[5] = 1850; 
+
+  // unused for now 
+  ppm[6] = default_servo_value;
+  ppm[7] = default_servo_value;
+
+  //update loop vars
+  count ++;
+}
+
+void doOffboard()
+{
+  if (Serial.available())
+  {
     const byte numBytes = 8;
     byte Buffer[numBytes];
     int bytecount = Serial.readBytesUntil('\0', Buffer, sizeof(Buffer));
@@ -244,8 +312,10 @@ void loop()
     Serial.print (" ");                       
     Serial.println (ppm[7]);
   }
-  else if(!right)
-  {
+}
+
+void doManual()
+{
     //flush buffer if there is any information
 //    while(Serial.available()) {Serial.read();}
     
@@ -280,42 +350,7 @@ void loop()
     Serial.print (digitalRead(PIN_2_POS_SW_LEFT));
     Serial.print (" ");
     Serial.println (digitalRead(PIN_2_POS_SW_RIGHT)); 
-  }
-
-  // update LED
-  if (count % 200 == 0)
-    digitalWrite(PIN_LED_GREEN, HIGH);
-  else
-    digitalWrite(PIN_LED_GREEN, LOW);
-
-
-
-  // handle special case of arming AutoQuad
-  if (analog[0] < 450 && analog[1] > 1000)
-  {
-    ppm[0] = 1150;
-    ppm[3] = 1850;  
-  }
-
-  // handle left 3-way switch
-  if (analog[4] < 300)
-    ppm[4] = 1150;
-  else if (analog[4] < 700)
-    ppm[4] = 1500;
-  else
-    ppm[4] = 1850;
-  
-  // handle right 3-way switch
-  if (analog[5] < 300)
-    ppm[5] = 1150;
-  else if (analog[5] < 700)
-    ppm[5] =  1500;
-  else
-    ppm[5] = 1850; 
-
-  // unused for now 
-  ppm[6] = default_servo_value;
-  ppm[7] = default_servo_value;
 }
+
 /****************************************************************************/
 
