@@ -50,8 +50,7 @@ class VideoMarkerFinder:
 
 		self.calibrated = True
 		if self.calibrated:
-			# self.maker_length = 7.3
-			self.maker_length = 20.2
+			self.maker_length = 7.3
 			self.calibration()
 
 	def publish_to_ros(self, id):
@@ -122,16 +121,15 @@ class VideoMarkerFinder:
 		# if the angle changes too quickly, then the axis has flipped
 		_,_,yaw = calc_angles(self.rmat)
 
-		dyaw = (yaw - self.prev_yaw) / self.time_diff
-		# rospy.loginfo(dyaw)
-
-		if abs(dyaw) > 1000:
-			# rospy.loginfo("Flipped")
+		if abs(self.prev_yaw - yaw) > 10:
+			self.prev_yaw = yaw
 			return True
 
-		self.prev_yaw = yaw
-		return False
-
+		if 100 > yaw > -100:
+			self.prev_yaw = yaw
+			return True
+		else:
+			return False
 
 	def calc_rotation_matrix(self):
 		self.rmat, _ = cv2.Rodrigues(self.rvec)

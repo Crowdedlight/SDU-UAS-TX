@@ -30,14 +30,14 @@ class Controller:
         self.busy = False
 
         # Relative to the cameras coordinate system
-        self.setpoint = np.array([[0], [0], [170], [170]])
+        self.setpoint = np.array([[0], [0], [100], [170]])
         self.current_pose = np.array([[0], [0], [0], [0]])
 
         # Relative to the drones coordinate system
         #   x     y       z    theta
         # roll, pitch, thrust, yaw
-        self.P = np.array([[0.4], [0.4], [0.5], [0.2]])
-        self.I = np.array([[0], [0], [0], [0]])
+        self.P = np.array([[0.1], [0.1], [0.6], [1]])
+        self.I = np.array([[0], [0], [0.05], [0]])
         self.D = np.array([[0], [0], [0], [0]])
 
         self.int_sum = np.array([[0], [0], [0], [0]])
@@ -103,7 +103,7 @@ class Controller:
             thrust = 0
 
         # msg = set_controller(thrust=self.thrust, roll=0, pitch=0, yaw=cmd[3, 0])
-        msg = set_controller(thrust=thrust, roll=-cmd[0, 0], pitch=-cmd[1, 0], yaw=-cmd[3, 0])
+        msg = set_controller(thrust=thrust, roll=cmd[0, 0], pitch=cmd[1, 0], yaw=cmd[3, 0])
         self.command_pub.publish(msg)
 
     # rospy.loginfo("t: {}, r: {}, p: {}, y: {}".format(self.thrust, cmd[0,0], cmd[1,0], cmd[3,0]))
