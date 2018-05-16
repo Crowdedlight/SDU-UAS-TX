@@ -176,7 +176,10 @@ void loop()
   analog[4] = analogRead(PIN_3_POS_SW_LEFT);
   analog[5] = analogRead(PIN_3_POS_SW_RIGHT);
   analog[6] = analogRead(PIN_POT);
-  analog[7] = analogRead(PIN_BATT_VOLT);
+  analog[7] = analogRead(PIN_BATT_VOLT) * (7.4 / 1023.0); //change value to be for 2cells in range of 7.4V to 0V
+
+  // change voltage to a voltage value
+  //float voltage = analogRead(PIN_BATT_VOLT) * (9.0 / 1023.0);
 
   // map to ppm output
   // thrust range 65 - 975 

@@ -25,8 +25,8 @@ class VideoMarkerFinder:
 
 	def __init__(self, dict, video_device):
 		self.camera = cv2.VideoCapture(video_device)
-		#self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-		#self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+		# self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+		# self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 		self.aruco_dict = dict
 		self.arucoParams = aruco.DetectorParameters_create()
 		self.running = True
@@ -44,13 +44,14 @@ class VideoMarkerFinder:
 		self.rvec = None
 		self.tvec = None
 		self.ros_topic = "/markerlocator/attitude"
-		self.marker_attitude_pub = rospy.Publisher(self.ros_topic, marker_info, queue_size=0)
+		self.marker_attitude_pub = rospy.Publisher(self.ros_topic, marker_info, queue_size=1)
 
 		self.markers_detected = False
 
 		self.calibrated = True
 		if self.calibrated:
-			self.maker_length = 7.3
+			# self.maker_length = 7.3
+			self.maker_length = 20.2
 			self.calibration()
 
 	def publish_to_ros(self, id):
@@ -69,7 +70,7 @@ class VideoMarkerFinder:
 		self.show_video_with_markers()
 
 	def calibration(self):
-		with open(self.path+'/calibration_webcam_stdsize.yaml') as f:
+		with open(self.path + '/calibration_webcam_stdsize.yaml') as f:
 			self.calibration_params = yaml.load(f)
 		self.camera_matrix = np.array(self.calibration_params.get('camera_matrix'))
 		self.dist_coeffs = np.array(self.calibration_params.get('dist_coeff'))
@@ -107,9 +108,10 @@ class VideoMarkerFinder:
 				# only publish and display if the orientation is correct
 				if not self.z_axis_flipped():
 					self.img_with_aruco = aruco.drawAxis(self.img_with_aruco, self.camera_matrix,
-														 self.dist_coeffs, self.rvec, self.tvec, 6)
+															 self.dist_coeffs, self.rvec, self.tvec, 6)
 					self.publish_to_ros(self.ids[i])
-					rospy.loginfo("Here")
+					# rospy.loginfo("Here")
+
 
 				#self.some_vec = np.cross(self.rmat[:,0], self.rmat[:,2])
 				#print self.rvec
@@ -121,12 +123,13 @@ class VideoMarkerFinder:
 		_,_,yaw = calc_angles(self.rmat)
 
 		dyaw = (yaw - self.prev_yaw) / self.time_diff
-		rospy.loginfo(dyaw)
-		self.prev_yaw = yaw
+		# rospy.loginfo(dyaw)
 
 		if abs(dyaw) > 1000:
+			# rospy.loginfo("Flipped")
 			return True
 
+		self.prev_yaw = yaw
 		return False
 
 
@@ -162,7 +165,7 @@ def main():
 	rospy.init_node('marker_attitude')
 	#rospy.sleep(1)
 
-	videoDevice = 0
+	videoDevice = 1
 	aruco_dict = aruco.Dictionary_get(aruco.DICT_7X7_250)
 	vmf = VideoMarkerFinder(aruco_dict, videoDevice)
 

@@ -190,37 +190,43 @@ void loop()
   if(Serial.available() && right)
   {
     // setup JSON
-    StaticJsonBuffer<100> jsonBuffer;
-    //String json = Serial.readStringUntil("\n");
-  
-    // Root of the object tree.
-    //Serial.println(json);
-    //
-    // It's a reference to the JsonObject, the actual bytes are inside the
-    // JsonBuffer with all the other nodes of the object tree.
-    // Memory is freed when jsonBuffer goes out of scope.
-    JsonObject& root = jsonBuffer.parseObject(Serial);
-    Serial.println(root)
-    // Test if parsing succeeds.
-    if (!root.success()) {
-      Serial.println("parseObject() failed");
-      return;
-    }
+//    StaticJsonBuffer<100> jsonBuffer;
+//    DynamicJsonBuffer jsonBuffer;
+//    //String json = Serial.readStringUntil("\n");
+//  
+//    // Root of the object tree.
+//    //Serial.println(json);
+//    //
+//    // It's a reference to the JsonObject, the actual bytes are inside the
+//    // JsonBuffer with all the other nodes of the object tree.
+//    // Memory is freed when jsonBuffer goes out of scope.
+//    JsonObject& root = jsonBuffer.parseObject(Serial);
+//    Serial.println(root)
+//    // Test if parsing succeeds.
+//    if (!root.success()) {
+//      Serial.println("parseObject() failed");
+//      return;
+//    }
 
-    
-    // Fetch values.
-    //
-    // Most of the time, you can rely on the implicit casts.
-    // In other case, you can do root["time"].as<long>();
-    double thrust = root["t"];
-    double roll = root["r"];
-    double pitch = root["p"];
-    double yaw = root["y"];
-  
-    ppm[0] = thrust;
-    ppm[1] = roll;
-    ppm[2] = pitch;
-    ppm[3] = yaw;
+    //read from serial until newline => Using bytes to be most efficient
+    const byte numBytes = 8;
+    byte Buffer[numBytes];
+    int bytecount = Serial.readBytesUntil('\0', Buffer, sizeof(Buffer));
+
+    //highbyte then lowbyte
+    unsigned short roll = Buffer[0] * 256 + Buffer[1];
+    unsigned short pitch = Buffer[2] * 256 + Buffer[3];
+    unsigned short yaw = Buffer[4] * 256 + Buffer[5];
+    unsigned short thrust = Buffer[6] * 256 + Buffer[7];
+
+    //check for limits on ppm
+    if (roll > 1150 && roll < 1850 && pitch > 1150 && pitch < 1850 && yaw > 1150 && yaw < 1850 && thrust > 1150 && thrust < 1850)
+    {
+        ppm[0] = thrust;
+        ppm[1] = roll;
+        ppm[2] = pitch;
+        ppm[3] = yaw;
+    }
 
     Serial.print (ppm[0]);
     Serial.print (" ");
@@ -240,6 +246,9 @@ void loop()
   }
   else if(!right)
   {
+    //flush buffer if there is any information
+//    while(Serial.available()) {Serial.read();}
+    
     // Use the potentiometer value to restrict the range of the output for pitch and roll
     int outputRange = 700*analog[6]/1023;
     int offset = 1500-outputRange/2;

@@ -7,14 +7,14 @@ import time
 import csv
 import serial
 import json
+import struct
 
 import cv2
 
-
 cv2.aruco
 
-
 from remote_control.msg import set_controller
+
 
 class remote_control:
     def __init__(self):
@@ -24,10 +24,11 @@ class remote_control:
 
         # parameters
         self.ser = serial.Serial(port='/dev/ttyUSB0', baudrate=115200)
-        self.output_range = 700
+        # self.output_range = 700
 
         # Subscribe to get height
-        self.sub_control = rospy.Subscriber("/remote_control/set_controller", set_controller, self.callback)
+        self.sub_control = rospy.Subscriber("/remote_control/set_controller", set_controller, self.callback,
+                                            queue_size=1)
 
     def clampPercentage(self, data):
 
@@ -53,7 +54,7 @@ class remote_control:
         if type == "thrust":
             return 7.0 * percent + 1150
         else:
-            return self.output_range / 100 * percent + 1500
+            return 3.5 * percent + 1500
 
     def callback(self, msg):
         # rospy.loginfo(msg)
@@ -67,7 +68,7 @@ class remote_control:
         # 100% => 1850
         # 0% => 1500
         # -100% => 1150
-	
+
         rospy.loginfo(msg)
 
         thrust = self.Percent_to_ppm(data.thrust, "thrust")
@@ -75,19 +76,15 @@ class remote_control:
         pitch = self.Percent_to_ppm(data.pitch)
         yaw = self.Percent_to_ppm(data.yaw)
 
-        jsonMsg = {"t": int(thrust),
-                   "r": int(roll),
-                   "p": int(pitch),
-                   "y": int(yaw)}
+        # pack to bytes
+        msg = struct.pack(">HHHH", roll, pitch, yaw, thrust)
 
+        # rospy.loginfo(str(roll) + ", " + str(pitch) + ", " + str(yaw) + ", " + str(thrust))
 
+        self.sendMsgToTransmitter(msg)
 
-        self.sendMsgToTransmitter(jsonMsg)
     def sendMsgToTransmitter(self, msg):
-        # json stringify for transmit
-        jsonMsg = json.dumps(msg)
-        self.ser.write(jsonMsg + " \n")
-        # rospy.loginfo(jsonMsg)
+        self.ser.write(msg)
 
     def shutdownHandler(self):
 
@@ -105,11 +102,12 @@ def main():
     rc = remote_control()
     rospy.on_shutdown(rc.shutdownHandler)
 
-    while not rospy.is_shutdown():
-        line = rc.ser.readline()
-#        rospy.loginfo(line)
+    # while not rospy.is_shutdown():
+        # line = rc.ser.readline()
+    #        rospy.loginfo(line)
 
     rospy.spin()
+
 
 if __name__ == '__main__':
     main()
