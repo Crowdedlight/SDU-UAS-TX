@@ -5,6 +5,7 @@ from marker_attitude.msg import marker_info
 from camera_controller.srv import Setpoint
 import cv2
 import math
+import csv
 
 
 def calc_angles(rot):
@@ -30,15 +31,15 @@ class Controller:
         self.busy = False
 
         # Relative to the cameras coordinate system
-        self.setpoint = np.array([[0], [0], [100], [170]])
+        self.setpoint = np.array([[0], [0], [195], [170]])
         self.current_pose = np.array([[0], [0], [0], [0]])
 
         # Relative to the drones coordinate system
-        #   x     y       z    theta
-        # roll, pitch, thrust, yaw
-        self.P = np.array([[0.1], [0.1], [0.6], [1]])
-        self.I = np.array([[0], [0], [0.05], [0]])
-        self.D = np.array([[0], [0], [0], [0]])
+        #                   x        y         z    theta
+        #                   roll,   pitch,  thrust,  yaw
+        self.P = np.array([[0.10],  [0.10], [0.10], [0.15]])
+        self.I = np.array([[0],     [0],    [0.07], [0]])
+        self.D = np.array([[0],     [0],    [0],    [0]])
 
         self.int_sum = np.array([[0], [0], [0], [0]])
         self.prev_error = np.array([[0], [0], [0], [0]])
@@ -93,8 +94,15 @@ class Controller:
         # rospy.loginfo("x: {}, y: {}, z: {}, yaw: {}".format(p[0],p[1],p[2],error[3]))
 
         error = np.array([p[0], p[1], p[2], error[3]])
-        cmd = self.pid_control(error)
 
+        # plot error
+        time = rospy.get_time()
+        with open('src/camera_controller/ErrorLogs/error.csv', 'a') as csvfile:
+            errorWriter = csv.writer(csvfile, delimiter=',')
+            errorWriter.writerow([p[0,0], p[1,0], p[2,0], error[3,0], time])
+
+
+        cmd = self.pid_control(error)
         thrust = self.thrust_zero_point + cmd[2]
 
         if thrust > 100:
